@@ -170,6 +170,62 @@ function functionName( node )
 	return "anon function @" + node.loc.start.line;
 }
 
+function ParameterCount( node )
+{
+	if( node.params )
+	{
+		return node.params.length;
+	}
+	return "anon function @" + node.loc.start.line;
+}
+
+function fileStrings(node)
+{
+	var line;
+	var count = 0;
+	for (line in node) 
+	{
+		if (typeof line == "string") 
+		{
+			count++;
+		}
+	}	
+	return count;
+}
+
+function SimpleCyclomaticComplexity(node)
+{
+	var count = 0;
+	if( node.type == 'IfStatement' || node.type == 'ForStatement' || node.type == 'WhileStatement' ||
+		 node.type == 'ForInStatement' || node.type == 'DoWhileStatement')
+	{
+		count++;
+	}
+	return count+1;
+}
+
+function MaxConditions(node)
+{
+	var c = 0;
+	var count = 0;
+	var key;
+	for (key in node)
+	{
+		if( node.operator == '&&' || node.operator == '||')
+		{
+			c++;
+		}
+		if (c > count)
+		{
+			count = c;
+		}
+	}
+	
+	return count;
+}
+
+
+
 // Helper function for allowing parameterized formatting of strings.
 if (!String.prototype.format) {
   String.prototype.format = function() {
