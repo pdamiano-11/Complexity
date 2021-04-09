@@ -28,7 +28,7 @@ function conditions(a)
       {
       }
 
-      if( a > 10 && a < 31 ||  
+      if( a > 10 && a < 31 &&  
           a == 33
         )
       {

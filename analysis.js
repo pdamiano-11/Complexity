@@ -8,7 +8,7 @@ function main()
 
 	if( args.length == 0 )
 	{
-		args = ["analysis.js"];
+		args = ["mystery.js"];
 	}
 	var filePath = args[0];
 	
@@ -33,9 +33,9 @@ function FunctionBuilder()
 	this.StartLine = 0;
 	this.FunctionName = "";
 	// The number of parameters for functions
-	this.ParameterCount  = 0,
+	this.ParameterCount  = 0;
 	// Number of if statements/loops + 1
-	this.SimpleCyclomaticComplexity = 0;
+	this.SimpleCyclomaticComplexity = 1;
 	// The max depth of scopes (nested ifs, loops, etc)
 	this.MaxNestingDepth    = 0;
 	// The max number of conditions if one decision statement.
@@ -113,6 +113,8 @@ function complexity(filePath)
 	builders[filePath] = fileBuilder;
 
 	// Tranverse program with a function visitor.
+	var name = '';
+	var counter = 0;
 	traverseWithParents(ast, function (node) 
 	{
 		if (node.type === 'FunctionDeclaration') 
@@ -121,9 +123,40 @@ function complexity(filePath)
 
 			builder.FunctionName = functionName(node);
 			builder.StartLine    = node.loc.start.line;
-
+			
 			builders[builder.FunctionName] = builder;
+			name = builder.FunctionName;
+
 		}
+		
+		if (node.params && name != '')
+		{
+			builders[name].ParameterCount = node.params.length;
+		}
+		
+		if (node.type == 'Literal' && typeof node.value == 'string')
+		{
+			builders[filePath].Strings++;
+		}
+		
+		if (isDecision(node) && name != '')
+		{
+			builders[name].SimpleCyclomaticComplexity++;
+		}
+		
+		if ((node.type == 'LogicalExpression') && ((node.operator == '&&') || (node.operator == '||')))
+		{
+			counter++;
+		}
+		else if (name != '')
+		{
+			if (counter > builders[name].MaxConditions)
+			{
+				builders[name].MaxConditions = counter;
+			}
+			counter = 0;
+		}
+
 
 	});
 
@@ -153,7 +186,8 @@ function childrenLength(node)
 function isDecision(node)
 {
 	if( node.type == 'IfStatement' || node.type == 'ForStatement' || node.type == 'WhileStatement' ||
-		 node.type == 'ForInStatement' || node.type == 'DoWhileStatement')
+		 node.type == 'ForInStatement' || node.type == 'DoWhileStatement' || node.type == 'ForOfStatement'
+			|| node.type == 'SwitchStatement')
 	{
 		return true;
 	}
@@ -169,61 +203,6 @@ function functionName( node )
 	}
 	return "anon function @" + node.loc.start.line;
 }
-
-function ParameterCount( node )
-{
-	if( node.params )
-	{
-		return node.params.length;
-	}
-	return "anon function @" + node.loc.start.line;
-}
-
-function fileStrings(node)
-{
-	var line;
-	var count = 0;
-	for (line in node) 
-	{
-		if (typeof line == "string") 
-		{
-			count++;
-		}
-	}	
-	return count;
-}
-
-function SimpleCyclomaticComplexity(node)
-{
-	var count = 0;
-	if( node.type == 'IfStatement' || node.type == 'ForStatement' || node.type == 'WhileStatement' ||
-		 node.type == 'ForInStatement' || node.type == 'DoWhileStatement')
-	{
-		count++;
-	}
-	return count+1;
-}
-
-function MaxConditions(node)
-{
-	var c = 0;
-	var count = 0;
-	var key;
-	for (key in node)
-	{
-		if( node.operator == '&&' || node.operator == '||')
-		{
-			c++;
-		}
-		if (c > count)
-		{
-			count = c;
-		}
-	}
-	
-	return count;
-}
-
 
 
 // Helper function for allowing parameterized formatting of strings.
