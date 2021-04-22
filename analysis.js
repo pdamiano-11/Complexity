@@ -134,7 +134,7 @@ function complexity(filePath)
 			builders[name].ParameterCount = node.params.length;
 		}
 		
-		if (node.type == 'Literal' && typeof node.value == 'string')
+		if (node.type == 'Literal')
 		{
 			builders[filePath].Strings++;
 		}
@@ -162,9 +162,24 @@ function complexity(filePath)
 
 }
 
-function getStrings(node)
+function getStrings(filePath)
 {
-	return node.Strings;
+	var buf = fs.readFileSync(filePath, "utf8");
+	var ast = esprima.parse(buf, options);
+	// A file level-builder:
+	var fileBuilder = new FileBuilder();
+	fileBuilder.FileName = filePath;
+	fileBuilder.ImportCount = 0;
+	builders[filePath] = fileBuilder;
+	
+	traverseWithParents(ast, function (node) 
+	{
+		if (node.type == 'Literal')
+		{
+			builders[filePath].Strings++;
+		}
+	});
+	return builders[filePath].Strings;
 }
 
 // Helper function for counting children of node.
@@ -316,4 +331,4 @@ mints.toString().split(".")[0] + " " + szmin;
       }
   }
  exports.complexity = complexity;
- exports.complexity = getStrings;
+ exports.getStrings = getStrings;
