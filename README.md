@@ -6,7 +6,7 @@ Two design patterns are of importance here:
 * A [Builder pattern](https://en.wikipedia.org/wiki/Builder_pattern), which is used to build up state and then finally emit.
 * A [Visitor pattern](https://en.wikipedia.org/wiki/Visitor_pattern), which is used to abstract the process of visiting a data structure such as abstract syntax tree (AST). The only input you have to provide is what action to perform at each node.
 
-### Esprima
+## Esprima
 
 Writing programs to do static code analysis on Javascript is easier now than ever, thanks to [esprima](http://esprima.org/) - the Javascript parser library. We will practice how to use esprima to do something fairly simple – measure basic code complexity metrics of JavaScript programs. 
 
